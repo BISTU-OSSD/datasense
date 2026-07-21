@@ -38,6 +38,17 @@ datasense summary examples/iris.csv
 | `stats` | 计算数值列的描述性统计：均值、标准差、四分位数等 |
 | `plot` | 生成散点图或直方图，输出PNG文件 |
 
+## 常见问题
+
+**Q: 支持哪些编码格式的CSV？**
+A: datasense自动尝试UTF-8、GBK、GB2312、Latin-1四种编码，覆盖大多数中文和英文CSV文件。
+
+**Q: 图表中的中文显示为方块怎么办？**
+A: 安装中文字体即可，例如在Debian/Ubuntu上执行 `sudo apt install fonts-wqy-microhei`。程序找不到字体时会输出warning提示。
+
+**Q: 支持Excel文件吗？**
+A: v1.0.0版本仅支持CSV格式，Excel支持计划在后续版本中加入。
+
 ## 项目结构
 
 ```
