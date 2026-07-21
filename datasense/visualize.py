@@ -117,3 +117,22 @@ def plot_histogram(data: dict[str, Any], col_name: str,
     plt.savefig(output, dpi=120)
     plt.close()
     return output
+
+
+def plot_boxplot(data, col_name, output="boxplot.png"):
+    """生成箱线图。"""
+    values = _get_numeric_values(data, col_name)
+    if not values:
+        raise ValueError(f"列 '{col_name}' 不是数值列或数据为空")
+
+    _setup_chinese_font()
+    plt.figure(figsize=(8, 6))
+    plt.boxplot(values, vert=True, patch_artist=True,
+                boxprops=dict(facecolor="lightblue", alpha=0.7))
+    plt.ylabel(col_name)
+    plt.title(f"Boxplot of {col_name}")
+    plt.grid(True, alpha=0.3, axis="y")
+    plt.tight_layout()
+    plt.savefig(output, dpi=120)
+    plt.close()
+    return output
