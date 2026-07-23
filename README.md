@@ -17,6 +17,22 @@ cd datasense
 pip install .
 ```
 
+### Windows 用户注意
+
+安装后如果 `datasense` 命令找不到，请尝试以下方法之一：
+
+**方法一：** 将 Python 的 Scripts 目录添加到系统 PATH（重新打开 CMD 生效）：
+```
+set PATH=%PATH%;%USERPROFILE%\AppData\Local\Programs\Python\Python312\Scripts
+```
+
+**方法二：** 使用 `python -m` 运行（不需要额外配置）：
+```bash
+python -m datasense stats examples/iris.csv
+python -m datasense plot examples/iris.csv --x sepal_length --y sepal_width
+python -m datasense summary examples/iris.csv
+```
+
 ## 快速开始
 
 ```bash
