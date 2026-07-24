@@ -48,22 +48,51 @@ datasense summary examples/iris.csv
 
 ## 支持的命令
 
+### 命令行工具
+
 | 命令 | 说明 |
 |------|------|
 | `summary` | 显示数据基本信息：行数、列名、数据类型、缺失值 |
 | `stats` | 计算数值列的描述性统计：均值、标准差、四分位数等 |
 | `plot` | 生成散点图或直方图，输出PNG文件 |
 
+### Web 可视化界面（新增）
+
+除了命令行工具，datasense 还提供了 **Web 网页端界面**，由组员 **李鑫硕** 开发。无需打开终端，在浏览器中即可完成数据分析。
+
+**快速启动：**
+
+```bash
+cd web
+pip install -r requirements.txt
+python app.py
+```
+
+打开浏览器访问 **http://localhost:5000**，即可看到 Web 界面。
+
+**Web 端功能：**
+- 拖拽上传 CSV 文件或一键加载示例数据（鸢尾花数据集）
+- 数据概览：显示文件名、行列数、每列数据类型及缺失值统计
+- 统计分析：对数值列输出均值、标准差、最小值、四分位数、最大值
+- 数据预览：表格形式展示前 10 行数据
+- 交互式可视化：选择 X/Y 轴列，实时生成散点图或直方图
+
+> Web 端完整代码在 `web/` 目录下，由李鑫硕独立开发完成。
+
 ## 项目结构
 
-```
+```sh
 datasense/
 ├── datasense/
 │   ├── __init__.py
-│   ├── cli.py          # 命令行接口
-│   ├── loader.py       # 数据加载模块
-│   ├── stats.py        # 统计计算模块
-│   └── visualize.py    # 可视化模块
+│   ├── cli.py          # 命令行接口（曾祥盛）
+│   ├── loader.py       # 数据加载模块（马明宇）
+│   ├── stats.py        # 统计计算模块（李鑫硕）
+│   └── visualize.py    # 可视化模块（朱皓锴）
+├── web/                # Web网页端界面（李鑫硕）
+│   ├── app.py          # Flask应用
+│   ├── templates/      # 前端页面
+│   └── README.md       # Web端说明
 ├── tests/
 ├── examples/
 │   └── iris.csv        # 示例数据集
