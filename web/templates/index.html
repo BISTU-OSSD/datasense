@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataSense - CSV数据分析工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+            font-size: 1.3em;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #e8ebff;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .info-box {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #666;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .plot-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            align-items: end;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            background: white;
+            cursor: pointer;
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .plot-container {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .plot-container img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .plot-placeholder {
+            color: #999;
+            font-size: 1.1em;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #ffe6e6;
+            color: #cc0000;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        .success {
+            background: #e6ffe6;
+            color: #006600;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .success.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 DataSense</h1>
+            <p>轻量级CSV数据分析工具 - 无需编写代码，一键生成统计报告和可视化图表</p>
+        </header>
+
+        <!-- 上传区域 -->
+        <div class="card">
+            <h2>📁 数据加载</h2>
+            <div class="upload-area" id="uploadArea">
+                <p style="font-size: 1.2em; margin-bottom: 15px;">📄 拖拽CSV文件到这里，或点击选择文件</p>
+                <p style="color: #666;">支持 .csv 格式，最大 16MB</p>
+                <input type="file" id="fileInput" class="file-input" accept=".csv">
+            </div>
+            <div style="text-align: center; margin-top: 15px;">
+                <span style="color: #666;">或者</span>
+                <button class="btn btn-secondary" id="loadSampleBtn">加载示例数据集 (鸢尾花)</button>
+            </div>
+
+            <div class="error" id="errorMsg"></div>
+            <div class="success" id="successMsg"></div>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>正在加载数据...</p>
+            </div>
+        </div>
+
+        <!-- 数据概览 -->
+        <div class="card" id="summaryCard" style="display: none;">
+            <h2>📋 数据概览</h2>
+            <div class="info-box">
+                <div class="info-item">
+                    <span class="info-label">文件名</span>
+                    <span class="info-value" id="filename">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">数据行数</span>
+                    <span class="info-value" id="totalRows">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">数据列数</span>
+                    <span class="info-value" id="totalColumns">-</span>
+                </div>
+            </div>
+
+            <h3 style="margin: 20px 0 10px; color: #333;">列信息</h3>
+            <div class="table-container">
+                <table id="columnsTable">
+                    <thead>
+                        <tr>
+                            <th>列名</th>
+                            <th>数据类型</th>
+                            <th>非空数量</th>
+                            <th>缺失值</th>
+                            <th>缺失率</th>
+                        </tr>
+                    </thead>
+                    <tbody id="columnsBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 统计信息 -->
+        <div class="card" id="statsCard" style="display: none;">
+            <h2>📈 统计分析</h2>
+            <div class="stats-grid" id="statsGrid">
+            </div>
+        </div>
+
+        <!-- 数据预览 -->
+        <div class="card" id="previewCard" style="display: none;">
+            <h2>👁️ 数据预览（前10行）</h2>
+            <div class="table-container">
+                <table id="previewTable">
+                    <thead id="previewHead">
+                    </thead>
+                    <tbody id="previewBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 可视化 -->
+        <div class="card" id="plotCard" style="display: none;">
+            <h2>📊 数据可视化</h2>
+            <div class="plot-controls">
+                <div class="form-group">
+                    <label for="plotType">图表类型</label>
+                    <select id="plotType">
+                        <option value="scatter">散点图</option>
+                        <option value="histogram">直方图</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="xColumn">X轴列</label>
+                    <select id="xColumn">
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="yColumn">Y轴列</label>
+                    <select id="yColumn">
+                    </select>
+                </div>
+                <button class="btn btn-primary" id="generatePlotBtn">生成图表</button>
+            </div>
+            <div class="plot-container" id="plotContainer">
+                <p class="plot-placeholder">选择列并点击"生成图表"按钮</p>
+            </div>
+        </div>
+
+        <footer>
+            <p>DataSense v1.0.0 | 轻量级CSV数据分析工具</p>
+        </footer>
+    </div>
+
+    <script>
+        // 全局变量
+        let columns = [];
+
+        // DOM元素
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const loadSampleBtn = document.getElementById('loadSampleBtn');
+        const errorMsg = document.getElementById('errorMsg');
+        const successMsg = document.getElementById('successMsg');
+        const loading = document.getElementById('loading');
+
+        // 上传区域事件
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) uploadFile(file);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) uploadFile(file);
+        });
+
+        loadSampleBtn.addEventListener('click', loadSample);
+
+        // 显示消息
+        function showError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.classList.add('active');
+            successMsg.classList.remove('active');
+        }
+
+        function showSuccess(msg) {
+            successMsg.textContent = msg;
+            successMsg.classList.add('active');
+            errorMsg.classList.remove('active');
+        }
+
+        function hideMessages() {
+            errorMsg.classList.remove('active');
+            successMsg.classList.remove('active');
+        }
+
+        // 上传文件
+        async function uploadFile(file) {
+            hideMessages();
+            loading.classList.add('active');
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess(`成功加载: ${data.filename} (${data.rows}行, ${data.columns.length}列)`);
+                    columns = data.columns;
+                    loadAllData();
+                } else {
+                    showError(data.error);
+                }
+            } catch (err) {
+                showError('上传失败: ' + err.message);
+            } finally {
+                loading.classList.remove('active');
+            }
+        }
+
+        // 加载示例数据
+        async function loadSample() {
+            hideMessages();
+            loading.classList.add('active');
+
+            try {
+                const response = await fetch('/load-sample', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess(`成功加载: ${data.filename} (${data.rows}行, ${data.columns.length}列)`);
+                    columns = data.columns;
+                    loadAllData();
+                } else {
+                    showError(data.error);
+                }
+            } catch (err) {
+                showError('加载失败: ' + err.message);
+            } finally {
+                loading.classList.remove('active');
+            }
+        }
+
+        // 加载所有数据
+        async function loadAllData() {
+            await Promise.all([
+                loadSummary(),
+                loadStats(),
+                loadPreview()
+            ]);
+            updateColumnSelects();
+            showCards();
+        }
+
+        // 显示所有卡片
+        function showCards() {
+            document.getElementById('summaryCard').style.display = 'block';
+            document.getElementById('statsCard').style.display = 'block';
+            document.getElementById('previewCard').style.display = 'block';
+            document.getElementById('plotCard').style.display = 'block';
+        }
+
+        // 加载摘要
+        async function loadSummary() {
+            try {
+                const response = await fetch('/summary');
+                const data = await response.json();
+
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+
+                document.getElementById('filename').textContent = data.filename;
+                document.getElementById('totalRows').textContent = data.total_rows.toLocaleString();
+                document.getElementById('totalColumns').textContent = data.total_columns;
+
+                const tbody = document.getElementById('columnsBody');
+                tbody.innerHTML = '';
+
+                data.columns.forEach(col => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><strong>${col.name}</strong></td>
+                        <td>${col.dtype}</td>
+                        <td>${col.non_null.toLocaleString()}</td>
+                        <td>${col.null.toLocaleString()}</td>
+                        <td>${col.null_percent}%</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (err) {
+                showError('加载摘要失败: ' + err.message);
+            }
+        }
+
+        // 加载统计
+        async function loadStats() {
+            try {
+                const response = await fetch('/stats');
+                const data = await response.json();
+
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+
+                const grid = document.getElementById('statsGrid');
+                grid.innerHTML = '';
+
+                Object.keys(data).forEach(col => {
+                    const stats = data[col];
+                    const card = document.createElement('div');
+                    card.className = 'stat-card';
+                    card.innerHTML = `
+                        <h3>${col}</h3>
+                        <div class="stat-item">
+                            <span>均值</span>
+                            <span>${stats.mean}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>标准差</span>
+                            <span>${stats.std}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>最小值</span>
+                            <span>${stats.min}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>25%</span>
+                            <span>${stats['25%']}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>50% (中位数)</span>
+                            <span>${stats['50%']}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>75%</span>
+                            <span>${stats['75%']}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>最大值</span>
+                            <span>${stats.max}</span>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (err) {
+                showError('加载统计失败: ' + err.message);
+            }
+        }
+
+        // 加载预览
+        async function loadPreview() {
+            try {
+                const response = await fetch('/preview');
+                const data = await response.json();
+
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+
+                const thead = document.getElementById('previewHead');
+                const tbody = document.getElementById('previewBody');
+
+                thead.innerHTML = '<tr>' + data.columns.map(col => `<th>${col}</th>`).join('') + '</tr>';
+                tbody.innerHTML = data.data.map(row =>
+                    '<tr>' + data.columns.map(col => `<td>${row[col] !== null ? row[col] : '-'}</td>`).join('') + '</tr>'
+                ).join('');
+            } catch (err) {
+                showError('加载预览失败: ' + err.message);
+            }
+        }
+
+        // 更新列选择器
+        function updateColumnSelects() {
+            const xSelect = document.getElementById('xColumn');
+            const ySelect = document.getElementById('yColumn');
+
+            xSelect.innerHTML = columns.map(col => `<option value="${col}">${col}</option>`).join('');
+            ySelect.innerHTML = columns.map(col => `<option value="${col}">${col}</option>`).join('');
+
+            // 默认选择前两列
+            if (columns.length >= 2) {
+                xSelect.value = columns[0];
+                ySelect.value = columns[1];
+            }
+        }
+
+        // 生成图表
+        document.getElementById('generatePlotBtn').addEventListener('click', async () => {
+            const plotType = document.getElementById('plotType').value;
+            const xColumn = document.getElementById('xColumn').value;
+            const yColumn = document.getElementById('yColumn').value;
+
+            const plotContainer = document.getElementById('plotContainer');
+            plotContainer.innerHTML = '<div class="spinner"></div><p>正在生成图表...</p>';
+
+            try {
+                const response = await fetch('/plot', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        plot_type: plotType,
+                        x_column: xColumn,
+                        y_column: yColumn
+                    })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    plotContainer.innerHTML = `<img src="${url}" alt="图表">`;
+                } else {
+                    const data = await response.json();
+                    plotContainer.innerHTML = `<p class="error">${data.error}</p>`;
+                }
+            } catch (err) {
+                plotContainer.innerHTML = `<p class="error">生成图表失败: ${err.message}</p>`;
+            }
+        });
+
+        // 直方图时隐藏Y轴选择
+        document.getElementById('plotType').addEventListener('change', (e) => {
+            const yGroup = document.getElementById('yColumn').parentElement;
+            if (e.target.value === 'histogram') {
+                yGroup.style.opacity = '0.5';
+                yGroup.style.pointerEvents = 'none';
+            } else {
+                yGroup.style.opacity = '1';
+                yGroup.style.pointerEvents = 'auto';
+            }
+        });
+    </script>
+</body>
+</html>
